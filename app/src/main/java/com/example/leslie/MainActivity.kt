@@ -2,6 +2,7 @@ package com.example.leslie
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -35,6 +36,32 @@ val model = listOf(
 class talkToAI(val model: Model, val prompt: String){
 
 }
+
+class warning(
+    context: Context,
+    title: String,
+    content: String,
+    ok: () -> Unit
+            ){
+    var warn = android.app.AlertDialog.Builder(context)
+        .setTitle(title)
+        .setMessage(content)
+        .setIcon(R.mipmap.ic_launcher)
+        .setPositiveButton("OK") {dialog, _ ->
+            ok()
+        }
+    fun warnNoDiss(){
+        warn.show()
+    }
+    fun warnDiss(dismis: () -> Unit){
+        warn.setOnDismissListener {
+            dismis()
+        }
+        warn.show()
+    }
+
+}
+
 public var dismissed: Boolean = false
 public val user: String? = null
 var welcomeJob: Job? = null
@@ -49,6 +76,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         if (user == null || user == ""){
             setContentView(insert_name)
+            val q: ImageButton = findViewById(R.id.info)
+            q.setOnClickListener {
+                warning(
+                    this,
+                    "Info",
+                    "This app wants safety and privacy for the user, once you set your username and password, you won't be able to change it and have to enter that everytime you want to use this app",
+                    ok = {
+
+                    }
+                ).warnNoDiss()
+            }
             WindowCompat.setDecorFitsSystemWindows(window, false)
             window.statusBarColor = ContextCompat.getColor(this, R.color.blackgrey)
             WindowInsetsControllerCompat(window, window.decorView).let { controller ->
@@ -63,7 +101,7 @@ class MainActivity : ComponentActivity() {
                         var randomizer = getRandomString(4)
                         var welcome: TextView = findViewById(R.id.welcome)
                         welcome.setText("Welcome, ${randomizer.toString()}!")
-                        delay(100)
+                        delay(500)
                     }
                 }
             }
@@ -87,9 +125,9 @@ class MainActivity : ComponentActivity() {
                 ok = {
                     dismissed = false
                     Toast.makeText(this, "Goodluck, $user!", Toast.LENGTH_SHORT).show()
-                },
-                dismiss = {
-                    dismissed = true
+                }
+                ).warnDiss (dismis = {
+                dismissed = true
                 })
         }
     }
@@ -106,27 +144,6 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    private fun warning(
-        context: Context,
-        title: String,
-        content: String,
-        ok: () -> Unit,
-        dismiss: () -> Unit
-        ){
-        val warn = android.app.AlertDialog.Builder(context)
-            .setTitle(title)
-            .setMessage(content)
-            .setIcon(R.mipmap.ic_launcher)
-            .setPositiveButton("OK") {dialog, _ ->
-                ok()
-            }
-            .setNegativeButton("Don't Show This Again") {dialog, _ ->
-                dismiss()
-            }
-        if (!dismissed) warn.show()
 
-
-
-    }
 }
 
